@@ -1,0 +1,4 @@
+>>>>>>>>>>>>>>>> PROBANDO INSERTAR-ORDENADO y ORACION-IMPRIMIR
+>>>>>>>>>>>>>>>> PROBANDO LONGITUD-MEDIA
+longitudMedia: 0.00000
+>>>>>>>>>>>>>>>> PROBANDO PALABRA-FILTRAR
