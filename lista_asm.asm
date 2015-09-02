@@ -1,7 +1,8 @@
-extern fprintf
-extern malloc
-extern free
-extern printf
+	extern fprintf
+	extern malloc
+	extern free
+	extern fopen
+	extern fclose
 ; PALABRA
 	global palabraLongitud
 	global palabraMenor
@@ -44,7 +45,8 @@ section .rodata
 
 section .data
 
-    new_line db 10
+    new_line: db 10, 0
+    append_file: db 'a', 0
 
 section .text
 ;/** FUNCIONES DE PALABRAS **/
@@ -56,10 +58,10 @@ section .text
 						xor r8, r8 ; index
 						xor r9, r9
 			cPalabraLongitud:	
-						mov dl, [rdi + r8]
+						mov r9b, [rdi + r8]
 						inc r8
-						cmp dl, NULL ; 0 es fin de string
-						jne cPalabraLongitud
+						cmp r9b, NULL ; 0 es fin de string
+						jnz cPalabraLongitud
 
 						sub r8, 1 ; resto 1 para que no cuente el fin de string
 						mov rax, r8
@@ -185,7 +187,7 @@ section .text
 						; obtengo direccion de memoria al puntero de la palabra
 						mov r8, [rdi + OFFSET_PALABRA]
 						push rdi
-						lea rdi, [r8]
+						mov rdi, r8
 						call free
 						pop rdi
 
@@ -218,54 +220,77 @@ section .text
 	oracionBorrar:
 						; puntero al primer nodo
 						mov r8, [rdi + OFFSET_PRIMERO]
+			cOracionBorrar:			
 						cmp r8, NULL
-						; si no hay ningún nodo, libero la estructura lista
-						jz liberarLista 
-
-						; caso contrario comienzo a liberar la lista nodo a nodo
-						sub rsp, 8
-						call liberarNodo
-						add rsp, 8
-
-						; y termino liberando la lista
+						jnz liberarNodo
 						jmp liberarLista
-			iterarLista:
-						; me muevo para llegar al caso base
-						; esto significa que el puntero al nodo, debe cambiar al siguiente
-						mov r8, [r8 + OFFSET_SIGUIENTE]
-						jmp liberarNodo
-			printShit: 
-						; si es null, llegue al caso base, entonces libero
-						push rdi
-						push r8
-						sub rsp, 8
-						mov rdi, [r8 + OFFSET_PALABRA]
-						call printf
-						add rsp, 8
-						pop r8
-						pop rdi
-						ret ;intencional
 			liberarNodo:
-						; pregunto si el valor apuntado por el siguiente es null
-						cmp qword [r8 + OFFSET_SIGUIENTE], NULL
-						jz printShit
-						; recursividad ftw
-						push r8
-						call iterarLista
-						pop r8
-
-						ret
+						mov r9, [r8 + OFFSET_SIGUIENTE] ; puntero al siguiente
+						push rdi
+						push r9
+						sub rsp, 8
+						mov rdi, r8 ; puntero que quiero liberar
+						call nodoBorrar
+						add rsp, 8
+						pop r9
+						pop rdi
+						mov r8, r9
+						jmp cOracionBorrar
 			liberarLista:
-						;rdi ya tiene el puntero a la lista
+						; rdi posee la direccion de mem a la lista
 						sub rsp, 8
 						call free
 						add rsp, 8
 						ret
+						
 
 	; void oracionImprimir( lista *l, char *archivo, void (*funcImprimirPalabra)(char*,FILE*) );
 	oracionImprimir:
-		; COMPLETAR AQUI EL CODIGO
+						push rdi
+						push rsi
+						push rdx
+						mov rdi, rsi
+						mov rsi, append_file
+						call fopen
+						pop rdx
+						pop rsi
+						pop rdi
 
+
+						mov r8, rax ; puntero al archivo :D
+						mov r9, [rdi + OFFSET_PRIMERO]
+			cOracionImprimir:		
+						cmp r9, NULL
+						jnz imprimeNodo					
+						jmp fin
+			imprimeNodo:
+						mov r10, [r9 + OFFSET_PALABRA]
+						push rdi
+						push rsi
+						push r9
+						push r8
+						push rdx
+						push rax
+						sub rsp, 8
+						mov rdi, r10
+						mov rsi, r8
+						call rdx
+						add rsp, 8
+						pop rax
+						pop rdx
+						pop r8
+						pop r9
+						pop rsi
+						pop rdi
+						mov r9, [r9 + OFFSET_SIGUIENTE]
+						jmp cOracionImprimir
+			fin:
+						mov rdi, rax
+						sub rsp, 8
+						call fclose
+						add rsp, 8
+						ret
+						; TODO: cuanto esta vacia la lista poner oracionvacia
 
 ;/** FUNCIONES AVANZADAS **/
 ;-----------------------------------------------------------

@@ -5,7 +5,11 @@
 void foo( char *s ){
 	if( s[0] != 0 ) s[0] = 'X'; 
 }
+/*
+void bar(char *s, FILE  *f){
 
+}
+*/
 void oracionBorrar2(lista *list){
 	
 	//obtengo el primer nodo
@@ -29,7 +33,7 @@ int main (void){
 	printf( "la longitud de ’hola’ es = %d \n", palabraLongitud( "hola" ) );
 	
 	if( palabraMenor( "caZa", "casa" ) )
-		printf( "TRUE\n" ); 
+		printf( "TRUE\n" );
 	else 
 		printf( "FALSE\n" );
 
@@ -59,11 +63,11 @@ int main (void){
 	nodoBorrar(miNodo);
 	
 	lista *miLista = oracionCrear();
-	insertarAtras(miLista, "hola");
-	insertarAtras(miLista, "mundo");
-	insertarAtras(miLista, "cruel");
-	//oracionImprimir( miLista, "salida.txt", palabraImprimir );
-	oracionBorrar2( miLista );
+	insertarAtras(miLista, palabraCopiar( "algunaPalabra" ));
+	insertarAtras(miLista, palabraCopiar( "algunaOtra" ));
+	insertarAtras(miLista, palabraCopiar( "cruel" ));
+	oracionImprimir( miLista, "salida", palabraImprimir );
+	oracionBorrar( miLista );
 
 	return 0;
 }
