@@ -45,8 +45,9 @@ section .rodata
 
 section .data
 
-    new_line: db 10, 0
-    append_file: db 'a', 0
+    new_line: 			db 10, 0
+    append_file: 		db 'a', 0
+    empty:				db '<oracionVacia>', 0
 
 section .text
 ;/** FUNCIONES DE PALABRAS **/
@@ -256,13 +257,14 @@ section .text
 						pop rsi
 						pop rdi
 
-
 						mov r8, rax ; puntero al archivo :D
 						mov r9, [rdi + OFFSET_PRIMERO]
+						cmp r9, NULL
+						jz listaVacia
 			cOracionImprimir:		
 						cmp r9, NULL
-						jnz imprimeNodo					
-						jmp fin
+						jnz imprimeNodo
+						jmp finOracionImprimir
 			imprimeNodo:
 						mov r10, [r9 + OFFSET_PALABRA]
 						push rdi
@@ -284,20 +286,60 @@ section .text
 						pop rdi
 						mov r9, [r9 + OFFSET_SIGUIENTE]
 						jmp cOracionImprimir
-			fin:
+			listaVacia:	
+						mov rdi, empty
+						mov rsi, r8
+						push rdi
+						push rax
+						sub rsp, 8
+						call rdx
+						add rsp, 8
+						pop rax
+						pop rdi
+			finOracionImprimir:
 						mov rdi, rax
 						sub rsp, 8
 						call fclose
 						add rsp, 8
 						ret
-						; TODO: cuanto esta vacia la lista poner oracionvacia
-
 ;/** FUNCIONES AVANZADAS **/
 ;-----------------------------------------------------------
 
 	; float longitudMedia( lista *l );
 	longitudMedia:
-		; COMPLETAR AQUI EL CODIGO
+						; RDI lista
+						push r12 ; contador de nodos
+						push r13 ; sumador longitues
+						push r14 ; puntero a nodo
+
+						xor r12, r12 
+						xor r13, r13
+
+						mov r14, [rdi + OFFSET_PRIMERO] 
+			cLongitudMedia:
+						cmp r14, NULL
+						jnz procesarLongitudNodoYContar
+						jmp calculaLongitudMedia
+
+			procesarLongitudNodoYContar:
+						inc r12
+						mov rdi, [r14 + OFFSET_PALABRA]
+						call palabraLongitud
+						add r13, rax
+						mov r14, [r14 + OFFSET_SIGUIENTE]
+						jmp cLongitudMedia
+			calculaLongitudMedia:
+						; calcular promedio y devolver
+						cmp r12, 0
+						jz finLongitudMedia
+						movq xmm0, r13
+						movq xmm1, r12
+						divss xmm0, xmm1
+			finLongitudMedia:
+						pop r14
+						pop r13
+						pop r12
+						ret
 
 	; void insertarOrdenado( lista *l, char *palabra, bool (*funcCompararPalabra)(char*,char*) );
 	insertarOrdenado:

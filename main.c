@@ -42,10 +42,10 @@ int main (void){
 	palabraFormatear( test , foo );
 	printf("%s\n", test);
 
-	char test2[] = "guachin";
+	char test2[] = "imprimir_test";
 	FILE *pfile;
-	pfile = fopen("test_file", "wt");
-	palabraImprimir( test2, stdout );
+	pfile = fopen(test2, "wt");
+	palabraImprimir( "Hola mundo", pfile );
 	fclose(pfile);
 
 
@@ -59,15 +59,16 @@ int main (void){
 
 	nodo *miNodo = nodoCrear( palabraCopiar( "algunaPalabra" ) );
 	printf( "Palabra del Nodo: %s\n", miNodo->palabra );
-
 	nodoBorrar(miNodo);
 	
 	lista *miLista = oracionCrear();
-	insertarAtras(miLista, palabraCopiar( "algunaPalabra" ));
-	insertarAtras(miLista, palabraCopiar( "algunaOtra" ));
-	insertarAtras(miLista, palabraCopiar( "cruel" ));
-	oracionImprimir( miLista, "salida", palabraImprimir );
-	oracionBorrar( miLista );
+	insertarAtras(miLista, palabraCopiar( "Hola" ));
+	insertarAtras(miLista, palabraCopiar( "Mundo" ));
+	insertarAtras(miLista, palabraCopiar( "Cruel" ));
+	oracionImprimir( miLista, "lista_imprimir", palabraImprimir );
+	
+	printf( "LongMedia = %2.5f\n", longitudMedia( miLista ) );
 
+	oracionBorrar( miLista );
 	return 0;
 }
