@@ -3,6 +3,7 @@
 	extern free
 	extern fopen
 	extern fclose
+	extern insertarAtras
 ; PALABRA
 	global palabraLongitud
 	global palabraMenor
@@ -93,10 +94,7 @@ section .text
 						jmp esMayor
 			finalPalabra:
 						cmp r10b, r11b
-						; si son iguales o la primer palabra es menor 
-						; (implica que la segunda no llego a su fin)
-						; entonces devuelvo false
-						jle esMayor
+						jge esMayor
 			esMenor:
 						mov rax, TRUE
 						ret
@@ -343,7 +341,99 @@ section .text
 
 	; void insertarOrdenado( lista *l, char *palabra, bool (*funcCompararPalabra)(char*,char*) );
 	insertarOrdenado:
-		; COMPLETAR AQUI EL CODIGO
+						; RDI puntero a la lista
+						; RSI puntero a la palabra a insertar 
+						; RDX puntero a la función de comparación
+						push r12 ; puntero al nodo actual
+						push r13
+						push r14
+
+						mov r12, [rdi + OFFSET_PRIMERO]
+						
+						cmp r12, NULL
+						jnz crearNuevoNodo
+
+						; si la lista esta vacía simplemente inserto y chau
+						call insertarAtras
+						jmp finInsertarOrdenado
+
+
+			crearNuevoNodo:
+								
+						push rdi
+						push rdx
+						push rsi
+						sub rsp, 8
+						mov rdi, rsi 
+						call nodoCrear
+						add rsp, 8 
+						pop rsi
+						pop rdx
+						pop rdi
+
+
+						mov r13, rax ; puntero al nuevo nodo
+
+						push rdi
+						push rdx
+						push rsi
+						; si debe insertar antes del primer nodo
+						mov rdi, [r13 + OFFSET_PALABRA]
+						mov rsi, [r12 + OFFSET_PALABRA]
+						sub rsp, 8
+						call rdx
+						add rsp, 8 
+						pop rsi
+						pop rdx
+						pop rdi
+
+						cmp rax, TRUE
+						jne cInsertarOrdenado
+						mov [rdi + OFFSET_PRIMERO], r13
+						mov [r13 + OFFSET_SIGUIENTE], r12
+						jmp finInsertarOrdenado
+
+			cInsertarOrdenado:
+
+						mov r14, r12
+						mov r12, [r12 + OFFSET_SIGUIENTE]
+
+						cmp r12, NULL
+						jnz compararPalabras
+						jmp insertaOrdenadamente
+
+			compararPalabras:
+
+						mov rdi, [r13 + OFFSET_PALABRA]
+						mov rsi, [r12 + OFFSET_PALABRA]
+
+						push rdi
+						push rdx
+						push rsi
+						sub rsp, 8
+						call rdx
+						add rsp, 8 
+						pop rsi
+						pop rdx
+						pop rdi
+
+						cmp rax, TRUE
+						jne cInsertarOrdenado
+
+			insertaOrdenadamente:
+
+						mov [r13 + OFFSET_SIGUIENTE], r12
+						mov [r14 + OFFSET_SIGUIENTE], r13
+
+			finInsertarOrdenado:
+
+						pop r14
+						pop r13
+						pop r12
+						ret
+
+
+
 
 	; void filtrarAltaLista( lista *l, bool (*funcCompararPalabra)(char*,char*), char *palabraCmp );
 	filtrarPalabra:

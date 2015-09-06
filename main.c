@@ -29,10 +29,56 @@ void oracionBorrar2(lista *list){
 
 }
 
+void insertarOrdenado2(lista *l, char *p, bool (*funcCompararPalabra)(char*,char*)){
+
+	nodo *temp;
+	temp = l->primero;
+
+	if(temp == NULL){
+		insertarAtras(l,p);
+		return;
+	}
+
+	nodo *nuevo;
+	nuevo = nodoCrear(p);
+	nodo *temp2;
+
+
+	// quiero el nodo y el siguiente
+	// para luego comparar contra ambos y decidir si
+	// colocar el nuevo nodo en el medio
+	
+	// en primer lugar si es menor al primer nodo
+	// lo inserto antes que el y chau
+
+	if(funcCompararPalabra(nuevo->palabra, temp->palabra)){
+		l->primero = nuevo;
+		nuevo->siguiente = temp;
+		return;
+	}else{
+		temp2 = temp;
+		temp = temp->siguiente;
+		// busco al primer mayor e inserto antes de el
+		// si no lo encuentro inserto al final de la lista :D
+		while(temp != NULL){
+			if(funcCompararPalabra(nuevo->palabra, temp->palabra))
+				break;
+			temp2 = temp;
+			temp = temp->siguiente;
+		}
+		// si termino por temp == NULL
+		// O porque encontró una palabra mayor a la nueva
+		// lo coloco despues de temp 2
+		nuevo->siguiente = temp;
+		temp2->siguiente = nuevo;
+		return;
+	}
+}
+
 int main (void){
 	printf( "la longitud de ’hola’ es = %d \n", palabraLongitud( "hola" ) );
 	
-	if( palabraMenor( "caZa", "casa" ) )
+	if( palabraMenor( "a", "a" ) )
 		printf( "TRUE\n" );
 	else 
 		printf( "FALSE\n" );
@@ -62,12 +108,18 @@ int main (void){
 	nodoBorrar(miNodo);
 	
 	lista *miLista = oracionCrear();
-	insertarAtras(miLista, palabraCopiar( "Hola" ));
-	insertarAtras(miLista, palabraCopiar( "Mundo" ));
-	insertarAtras(miLista, palabraCopiar( "Cruel" ));
-	oracionImprimir( miLista, "lista_imprimir", palabraImprimir );
+	//insertarAtras(miLista, palabraCopiar( "Hola" ));
+	//insertarAtras(miLista, palabraCopiar( "Mundo" ));
+	//insertarAtras(miLista, palabraCopiar( "Cruel" ));
+	//oracionImprimir( miLista, "lista_imprimir", palabraImprimir );
 	
 	printf( "LongMedia = %2.5f\n", longitudMedia( miLista ) );
+
+	insertarOrdenado( miLista, palabraCopiar( "b" ), palabraMenor );
+	insertarOrdenado( miLista, palabraCopiar( "b" ), palabraMenor );
+	insertarOrdenado( miLista, palabraCopiar( "aa" ), palabraMenor );
+	insertarOrdenado( miLista, palabraCopiar( "a" ), palabraMenor );
+	oracionImprimir( miLista, "insertaOrdenado", palabraImprimir );
 
 	oracionBorrar( miLista );
 	return 0;
