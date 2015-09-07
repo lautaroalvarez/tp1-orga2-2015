@@ -48,7 +48,8 @@ section .data
 
     new_line: 			db 10, 0
     append_file: 		db 'a', 0
-    empty:				db '<oracionVacia>', 0
+    empty:				db '<oracionVacia>', 10, 0
+    emptyDiabolico		db '<sinMensajeDiabolico>', 10, 0
 
 section .text
 ;/** FUNCIONES DE PALABRAS **/
@@ -437,8 +438,163 @@ section .text
 
 	; void filtrarAltaLista( lista *l, bool (*funcCompararPalabra)(char*,char*), char *palabraCmp );
 	filtrarPalabra:
-		; COMPLETAR AQUI EL CODIGO
+						; RDI puntero a la lista
+						; RSI puntero a la funcion de comparacion
+						; RDX puntero a la palabra de comparacion
+						push r12 ; puntero al nodo actual
+						push r13 ; guarda el anterior elemento
+						push r14 ; temporal auxiliar
+						push r15 ; puntero a la funcion de comparacion (comodidad)
+						mov r15, rsi
+						xor r13, r13
+
+						mov r12, [rdi + OFFSET_PRIMERO]
+			cFiltrarPalabra:			
+						cmp r12, NULL
+						jz finFiltrarPalabra
+
+
+						mov rdi, [r12 + OFFSET_PALABRA]
+						mov rsi, rdx
+
+						push rdi
+						push rdx
+						sub rsp, 8
+						call r15
+						add rsp, 8
+						pop rdx
+						pop rdi
+
+						cmp rax, FALSE
+						jz reapuntarNodos
+						jmp simplementeIterarFP
+
+			reapuntarNodos:
+
+						; si no tengo el precedente seteado
+						; es el principio de la lista
+						mov r14, [r12 + OFFSET_SIGUIENTE]
+						cmp r13, NULL
+						jz reapuntarPrimeroEnLista 
+						jmp reapuntarGenerico
+			reapuntarPrimeroEnLista:
+						mov [rdi + OFFSET_PRIMERO], r14
+						jmp borrarEIterar
+			reapuntarGenerico:
+						mov [r13 + OFFSET_SIGUIENTE], r14
+			borrarEIterar:
+						mov r14, [r12 + OFFSET_SIGUIENTE]
+
+						mov rdi, r12
+
+						push rdi
+						push rdx
+						sub rsp, 8
+						call nodoBorrar
+						add rsp, 8
+						pop rdx
+						pop rdi
+
+						mov r12, r14
+						jmp cFiltrarPalabra
+
+			simplementeIterarFP:
+
+						mov r13, r12
+						mov r12, [r12 + OFFSET_SIGUIENTE]
+						jmp cFiltrarPalabra
+
+			finFiltrarPalabra:
+
+						pop r15
+						pop r14
+						pop r13
+						pop r12
+						ret
+
 
 	; void descifrarMensajeDiabolico( lista *l, char *archivo, void (*funcImpPbr)(char*,FILE* ) );
 	descifrarMensajeDiabolico:
-		; COMPLETAR AQUI EL CODIGO
+						
+						push r12 ; puntero a los nodos
+						push r13 ; puntero al archivo
+						push r14 ; puntero a la funcion que imprime
+						push r15 ; contador de paridad
+						push rbx
+						push rbp
+						sub rsp, 8
+
+						mov rbp, rsp
+						mov r13, rsi
+						mov r14, rdx
+						xor rax, rax
+						xor r15, r15
+						mov r12, [rdi + OFFSET_PRIMERO]
+
+						mov rdi, r13
+						mov rsi, append_file
+						call fopen
+						mov r13, rax
+
+						
+						; pusheo todos los elementos en el stack
+						cmp r12, NULL
+						jnz cDMD
+
+						mov rdi, emptyDiabolico
+						mov rsi, r13
+						call r14
+						jmp finDMD
+						; si esta vacia escribo 
+
+			cDMD:
+						mov rcx, [r12 + OFFSET_PALABRA]
+						push rcx ; pusheo la palabra al stack
+						inc r15
+						mov r12, [r12 + OFFSET_SIGUIENTE]
+						cmp r12, NULL
+						jnz cDMD
+
+			compAndPopDMD:
+
+						cmp r15, 0
+						jz finDMD
+
+						; divido para saber cuanto ajustar el stack ;)
+						mov rax, r15
+						mov rbx, 2
+						xor rdx, rdx
+						div rbx
+						dec r15
+
+						; rdx 0 o 1
+						cmp rdx, 0
+						je popAndSub
+
+			justPop:
+						pop rax
+						mov rdi, rax
+						mov rsi, r13
+						call r14
+						jmp compAndPopDMD
+			popAndSub:
+						pop rax		
+						sub rsp, 8
+						mov rdi, rax
+						mov rsi, r13
+						call r14
+						add rsp, 8
+						jmp compAndPopDMD
+
+			finDMD:
+
+						mov rdi, r13
+						call fclose
+
+						add rsp, 8
+						pop rbp
+						pop rbx
+						pop r15
+						pop r14
+						pop r13
+						pop r12

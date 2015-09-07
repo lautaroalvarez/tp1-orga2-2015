@@ -75,6 +75,31 @@ void insertarOrdenado2(lista *l, char *p, bool (*funcCompararPalabra)(char*,char
 	}
 }
 
+void filtrarPalabra2( lista *l, bool (*funcCompararPalabra)(char*,char*), char *palabraCmp ){
+	nodo *temp;
+	temp = l->primero;
+
+	nodo *temp2, *temp3;
+	temp2 = NULL; //guarda el anterior elemento
+	while(temp != NULL){
+		if(!funcCompararPalabra(temp->palabra, palabraCmp)){
+			if(temp2 == NULL){
+				//es el primer elemento
+				l->primero = temp->siguiente;
+			}else{
+				//es cualquier otro
+				temp2->siguiente = temp->siguiente;
+			}
+			temp3 = temp->siguiente;
+			nodoBorrar(temp);
+			temp = temp3;
+		}else{
+			temp2 = temp;
+			temp = temp->siguiente;
+		}
+	}
+}
+
 int main (void){
 	printf( "la longitud de ’hola’ es = %d \n", palabraLongitud( "hola" ) );
 	
@@ -115,12 +140,21 @@ int main (void){
 	
 	printf( "LongMedia = %2.5f\n", longitudMedia( miLista ) );
 
+	insertarOrdenado( miLista, palabraCopiar( "c" ), palabraMenor );
+	//insertarOrdenado( miLista, palabraCopiar( "d" ), palabraMenor );
+	//insertarOrdenado( miLista, palabraCopiar( "b" ), palabraMenor );
 	insertarOrdenado( miLista, palabraCopiar( "b" ), palabraMenor );
-	insertarOrdenado( miLista, palabraCopiar( "b" ), palabraMenor );
-	insertarOrdenado( miLista, palabraCopiar( "aa" ), palabraMenor );
+	//insertarOrdenado( miLista, palabraCopiar( "aa" ), palabraMenor );
 	insertarOrdenado( miLista, palabraCopiar( "a" ), palabraMenor );
-	oracionImprimir( miLista, "insertaOrdenado", palabraImprimir );
+	//oracionImprimir( miLista, "insertaOrdenado", palabraImprimir );
 
+	//filtrarPalabra( miLista, palabraMenor, "b" );
+	//filtrarPalabra( miLista, palabraIgual, "palabra1" );
+	//oracionImprimir( miLista, "insertaOrdenado", palabraImprimir );
+	
+	descifrarMensajeDiabolico( miLista, "diabolico", palabraImprimir );
+	
 	oracionBorrar( miLista );
+
 	return 0;
 }
